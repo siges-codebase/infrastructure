@@ -1,0 +1,52 @@
+services:
+  repository:
+    build: ../repository
+    container_name: siges-repository
+    volumes:
+      - ../repository:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:mysecretpassword@db:5432/mydatabase
+    networks:
+      - siges_local
+
+  db:
+    image: postgres:14-alpine
+    container_name: siges-postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - siges_local
+
+  frontend:
+    build: ./frontend
+    container_name: siges-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+    depends_on:
+      - repository
+    networks:
+      - siges_local
+
+volumes:
+  postgres_data:
+
+networks:
+  siges_local:
+    driver: bridge
