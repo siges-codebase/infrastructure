@@ -8,15 +8,24 @@ function clone {
         if [ ! -d "repository" ]; then
             git clone git@github.com:siges-codebase/repository.git
         fi
+        if [ ! -d "db" ]; then
+            mkdir db
+        fi
     else
         cd ..
         clone
     fi
 }
 
-function compose {
-    docker-compose -f infrastructure/docker-compose.yml up --build
+function build {
+    export DB_USER="sigesadmin"
+    export DB_PASSWORD="S1g3s"
+    export DB_NAME="sigesdb"
+    docker-compose build
 }
 
 clone
-compose
+cd infrastructure
+build
+
+source start.sh
